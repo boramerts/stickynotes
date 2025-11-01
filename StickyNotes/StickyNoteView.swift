@@ -1,0 +1,114 @@
+//
+//  StickyNoteView.swift
+//  StickyNotes
+//
+//  Created by Bora Mert on 1.11.2025.
+//
+
+import SwiftUI
+import SwiftData
+
+struct StickyNoteView: View {
+    @State private var offset = CGSize.zero
+    @State private var scale: CGFloat = 1.0
+    @State private var opacity: CGFloat = 1.0
+    @State private var rotation: Angle = Angle(degrees: Double.random(in: -5...5))
+    @State private var startX: Double = 0
+    @State private var startY: Double = 0
+    
+    @Environment(\.modelContext) private var context
+    @Bindable var note: Note
+    var screenSize: CGSize
+    
+    @State private var isDeleting: Bool = false
+    
+    var body: some View {
+        ZStack {
+            Image("StickyNote")
+                .resizable()
+                .scaledToFill()
+                .aspectRatio(contentMode: .fit)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(note.title.isEmpty ? "Untitled" : note.title)
+                        .font(.system(size: 18)).bold()
+                        .lineLimit(1)
+                    Spacer()
+                }
+                Text(note.body.isEmpty ? " " : note.body)
+                    .font(.system(size: 14))
+                    .lineLimit(4)
+                Spacer()
+            }
+            .padding()
+        }
+        .frame(width: 120, height: 120)
+        .opacity(opacity)
+        .offset(offset)
+        .rotationEffect(rotation)
+        .scaleEffect(scale)
+        .gesture(
+            DragGesture()
+                .onChanged { gesture in
+                    // On first movement, capture the starting absolute coordinates from the model.
+                    if offset == .zero {
+                        startX = note.x
+                        startY = note.y
+                        // Bring to front as soon as drag begins
+                        note.zIndex = Date().timeIntervalSince1970
+                    }
+                    offset = gesture.translation
+                    
+                    if startX + offset.width <= screenSize.width / 3.4 && startY + offset.height >= screenSize.height * 0.85 {
+                        isDeleting = true
+                    } else {
+                        isDeleting = false
+                    }
+                    
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.2)) {
+                        rotation = Angle(degrees: 0)
+                        scale = 1.05
+                        if isDeleting {
+                            opacity = 0.80
+                            scale = 0.95
+                        } else {
+                            opacity = 1.0
+                            scale = 1.05
+                        }
+                    }
+                }
+                .onEnded { value in
+                    // Commit new absolute position
+                    note.x = startX + value.translation.width
+                    note.y = startY + value.translation.height
+                    
+                    // Keep it on top after dropping as well
+                    note.zIndex = Date().timeIntervalSince1970
+                    
+                    if isDeleting {
+                        note.isTrash = true
+                    }
+                    
+                    // Reset transient visuals
+                    offset = .zero
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.85, blendDuration: 0.2)) {
+                        scale = 1.0
+                        rotation = Angle(degrees: Double.random(in: -5...5))
+                    }
+                    
+                    // Persist
+                    try? context.save()
+                }
+        )
+        .onTapGesture {
+            withAnimation(.spring()) {
+                note.isEditing = true
+                note.width = 280
+                note.height = 260
+                // Also bring to front when entering edit
+                note.zIndex = Date().timeIntervalSince1970
+            }
+            try? context.save()
+        }
+    }
+}
