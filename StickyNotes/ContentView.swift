@@ -9,6 +9,10 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @AppStorage("NoteColor") private var noteColor: String = "yellow"
+    @AppStorage("NoteSize") private var noteSize: String = "Normal"
+    @AppStorage("ColorScheme") var appearance: String = "system"
+    
     @Environment(\.modelContext) private var context
     @Query private var notes: [Note]
     
@@ -19,6 +23,24 @@ struct ContentView: View {
         notes.contains(where: { $0.isEditing })
     }
     
+    private var frameSide: CGFloat {
+        CGFloat(SettingsHandler.shared.getNoteSize(from: noteSize))
+    }
+    
+    private var noteImage: String {
+        SettingsHandler.shared.getNoteColor(from: noteColor)
+    }
+    
+    private var notepadImage: String {
+        SettingsHandler.shared.getNotepadColor(from: noteColor)
+    }
+    
+    private var bodySize: CGFloat {
+        SettingsHandler.shared.getFontSize(from: noteSize)
+    }
+    
+    @State var shouldPresentList = false
+    
     var body: some View {
         GeometryReader { proxy in
             ZStack {
@@ -26,12 +48,12 @@ struct ContentView: View {
                     Spacer()
                     HStack {
                         Button {
-                            // TODO: handle trash
+                            shouldPresentList.toggle()
                         } label: {
                             Image(hasTrash ? "TrashFull" : "TrashEmpty")
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 120, height: 120)
+                                .frame(width: frameSide, height: frameSide)
                                 .padding([.leading, .bottom], 12)
                                 // Bounce by scaling up when hasTrash == true, back to 1.0 when false
                                 .scaleEffect(hasTrash ? 1.12 : 1.0)
@@ -42,17 +64,23 @@ struct ContentView: View {
                                 )
                         }
                         .buttonStyle(.plain)
+                        .sheet(isPresented: $shouldPresentList) {
+                            NoteListView()
+                                .presentationDragIndicator(.visible)
+                                .preferredColorScheme(appearance == "system" ? nil : (appearance == "dark" ? .dark : .light))
+                        }
 
                         Spacer()
                         
                         Button {
                             createNoteForEditing(screenSize: proxy.size)
                         } label: {
-                            Image("Notepad")
+                            Image(notepadImage)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 100, height: 100)
-                                .padding([.trailing, .bottom], 12)
+                                .padding(.bottom, 12)
+                                .padding(.trailing, 16)
                         }
                         .buttonStyle(.plain)
                     }
@@ -83,7 +111,7 @@ struct ContentView: View {
                     
                     ForEach(visibleNotes) { note in
                         if note.isEditing {
-                            NoteEditorView(note: note, screenSize: proxy.size)
+                            NoteEditorView(note: note, screenSize: proxy.size, noteImage: noteImage)
                                 .position(CGPoint(x: proxy.size.width / 2,
                                                   y: proxy.size.height * 0.55))
                                 .zIndex(6) // higher than the tap layer
@@ -104,7 +132,7 @@ struct ContentView: View {
                 .animation(.spring(), value: notes.map { $0.isEditing })
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.systemBackground))
+            .background(Color(.appBackground))
         }
         .ignoresSafeArea(.keyboard)
     }
@@ -118,7 +146,8 @@ struct ContentView: View {
             width: 280,
             height: 260,
             isEditing: true,
-            zIndex: Date().timeIntervalSince1970 // bring to front
+            zIndex: Date().timeIntervalSince1970, // bring to front
+            dateAdded: Date.now
         )
         print(Date().timeIntervalSince1970)
         context.insert(note)
@@ -130,12 +159,14 @@ struct NoteEditorView: View {
     @Environment(\.modelContext) private var context
     @Bindable var note: Note
     var screenSize: CGSize
+    var noteImage: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 TextField("Title", text: $note.title)
                     .font(.title2).bold()
+                    .foregroundStyle(.black)
                 Spacer()
                 Button {
                     withAnimation(.spring()) {
@@ -155,12 +186,13 @@ struct NoteEditorView: View {
                 .font(.body)
                 .frame(height: 140)
                 .scrollContentBackground(.hidden)
+                .foregroundStyle(.black)
             Spacer()
         }
         .padding()
         .padding(.horizontal)
         .background(
-            Image("StickyNote")
+            Image(noteImage)
                 .resizable()
                 .scaledToFill()
         )

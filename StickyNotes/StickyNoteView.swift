@@ -9,12 +9,27 @@ import SwiftUI
 import SwiftData
 
 struct StickyNoteView: View {
+    @AppStorage("NoteColor") private var noteColor: String = "yellow"
+    @AppStorage("NoteSize") private var noteSize: String = "Normal"
+    
     @State private var offset = CGSize.zero
     @State private var scale: CGFloat = 1.0
     @State private var opacity: CGFloat = 1.0
     @State private var rotation: Angle = Angle(degrees: Double.random(in: -5...5))
     @State private var startX: Double = 0
     @State private var startY: Double = 0
+
+    private var frameSide: CGFloat {
+        CGFloat(SettingsHandler.shared.getNoteSize(from: noteSize))
+    }
+    
+    private var noteImage: String {
+        SettingsHandler.shared.getNoteColor(from: noteColor)
+    }
+    
+    private var bodySize: CGFloat {
+        SettingsHandler.shared.getFontSize(from: noteSize)
+    }
     
     @Environment(\.modelContext) private var context
     @Bindable var note: Note
@@ -24,25 +39,30 @@ struct StickyNoteView: View {
     
     var body: some View {
         ZStack {
-            Image("StickyNote")
+            Image(noteImage)
                 .resizable()
                 .scaledToFill()
                 .aspectRatio(contentMode: .fit)
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(note.title.isEmpty ? "Untitled" : note.title)
-                        .font(.system(size: 18)).bold()
+                        .font(.system(size: bodySize + 4)).bold()
                         .lineLimit(1)
+                        .foregroundStyle(.black)
                     Spacer()
                 }
                 Text(note.body.isEmpty ? " " : note.body)
-                    .font(.system(size: 14))
+                    .font(.system(size: bodySize))
                     .lineLimit(4)
+                    .foregroundStyle(.black)
                 Spacer()
+                Text(note.dateAdded.formatted(date: .abbreviated, time: .omitted))
+                    .font(.system(size: bodySize - 4))
+                    .foregroundStyle(.gray)
             }
             .padding()
         }
-        .frame(width: 120, height: 120)
+        .frame(width: frameSide, height: frameSide)
         .opacity(opacity)
         .offset(offset)
         .rotationEffect(rotation)

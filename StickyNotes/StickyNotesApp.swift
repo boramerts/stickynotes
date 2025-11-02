@@ -15,7 +15,6 @@ struct StickyNotesApp: App {
             Note.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
@@ -23,9 +22,21 @@ struct StickyNotesApp: App {
         }
     }()
 
+    init() {
+        UserDefaults.standard.register(defaults: [
+            "NoteColor": "yellow",
+            "NoteSize": "Normal",
+            "AllowRotation": true,
+            "ColorScheme": "system"
+        ])
+    }
+    
+    @AppStorage("ColorScheme") var appearance: String = "system"
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(appearance == "system" ? nil : (appearance == "dark" ? .dark : .light))
         }
         .modelContainer(sharedModelContainer)
     }

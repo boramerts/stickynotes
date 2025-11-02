@@ -20,6 +20,7 @@ final class Note {
     var height: Double
     var isEditing: Bool
     var zIndex: Double
+    var dateAdded: Date
     
     init(id: UUID = UUID(),
          x: Double = 0,
@@ -30,7 +31,8 @@ final class Note {
          width: Double = 120,
          height: Double = 120,
          isEditing: Bool = false,
-         zIndex: Double = 0
+         zIndex: Double = 0,
+         dateAdded: Date = Date.now
     ) {
         self.id = id
         self.x = x
@@ -42,5 +44,6 @@ final class Note {
         self.height = height
         self.isEditing = isEditing
         self.zIndex = zIndex
+        self.dateAdded = dateAdded
     }
 }
