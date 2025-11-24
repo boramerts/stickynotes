@@ -1,0 +1,132 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "display-p3:0.89844,0.88281,0.84033,1.00000",
+      "display-p3:0.82795,0.81367,0.77083,1.00000"
+    ]
+  },
+  "groups" : [
+    {
+      "blur-material-specializations" : [
+        {
+          "value" : null
+        },
+        {
+          "appearance" : "tinted",
+          "value" : 0.5
+        }
+      ],
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "glass-specializations" : [
+            {
+              "value" : false
+            },
+            {
+              "appearance" : "tinted",
+              "value" : true
+            }
+          ],
+          "image-name" : "NoteFront 2.svg",
+          "name" : "NoteFront 2",
+          "position-specializations" : [
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 3.79,
+                "translation-in-points" : [
+                  304.50221939853793,
+                  294.9988975553226
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "glass-specializations" : [
+            {
+              "value" : true
+            },
+            {
+              "appearance" : "tinted",
+              "value" : true
+            }
+          ],
+          "image-name" : "NoteBack 2.svg",
+          "name" : "NoteBack 2",
+          "position-specializations" : [
+            {
+              "idiom" : "square",
+              "value" : {
+                "scale" : 3.79,
+                "translation-in-points" : [
+                  0,
+                  0
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Note",
+      "position-specializations" : [
+        {
+          "idiom" : "square",
+          "value" : {
+            "scale" : 0.86,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow-specializations" : [
+        {
+          "value" : {
+            "kind" : "neutral",
+            "opacity" : 0.5
+          }
+        },
+        {
+          "appearance" : "tinted",
+          "value" : {
+            "kind" : "neutral",
+            "opacity" : 1
+          }
+        }
+      ],
+      "specular-specializations" : [
+        {
+          "value" : false
+        },
+        {
+          "appearance" : "tinted",
+          "value" : true
+        }
+      ],
+      "translucency-specializations" : [
+        {
+          "value" : {
+            "enabled" : false,
+            "value" : 0.05
+          }
+        },
+        {
+          "appearance" : "tinted",
+          "value" : {
+            "enabled" : true,
+            "value" : 0.46
+          }
+        }
+      ]
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "iOS"
+    ]
+  }
+}

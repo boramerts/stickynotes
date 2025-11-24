@@ -27,16 +27,33 @@ struct StickyNotesApp: App {
             "NoteColor": "yellow",
             "NoteSize": "Normal",
             "AllowRotation": true,
-            "ColorScheme": "system"
+            "ColorScheme": "system",
+            "HasSeenOnboarding": false
         ])
     }
     
     @AppStorage("ColorScheme") var appearance: String = "system"
+    @AppStorage("HasSeenOnboarding") private var hasSeenOnboarding: Bool = false
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .preferredColorScheme(appearance == "system" ? nil : (appearance == "dark" ? .dark : .light))
+            // Crossfade + blur replace
+            ZStack {
+                // Content sits at the back; fades/blur in when onboarding completes
+                ContentView()
+                    .opacity(hasSeenOnboarding ? 1 : 0)
+                    .blur(radius: hasSeenOnboarding ? 0 : 6)
+                    .allowsHitTesting(hasSeenOnboarding)
+                    .animation(.easeInOut(duration: 0.35), value: hasSeenOnboarding)
+
+                // Onboarding sits on top initially; fades/blur out when done
+                OnboardingView()
+                    .opacity(hasSeenOnboarding ? 0 : 1)
+                    .blur(radius: hasSeenOnboarding ? 8 : 0)
+                    .allowsHitTesting(!hasSeenOnboarding)
+                    .animation(.easeInOut(duration: 0.35), value: hasSeenOnboarding)
+            }
+            .preferredColorScheme(appearance == "system" ? nil : (appearance == "dark" ? .dark : .light))
         }
         .modelContainer(sharedModelContainer)
     }

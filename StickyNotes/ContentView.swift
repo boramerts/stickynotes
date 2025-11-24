@@ -40,6 +40,8 @@ struct ContentView: View {
     }
     
     @State var shouldPresentList = false
+    // New: live drag-over-trash signal from any note
+    @State private var isOverTrash: Bool = false
     
     var body: some View {
         GeometryReader { proxy in
@@ -56,11 +58,17 @@ struct ContentView: View {
                                 .frame(width: frameSide, height: frameSide)
                                 .padding([.leading, .bottom], 12)
                                 // Bounce by scaling up when hasTrash == true, back to 1.0 when false
-                                .scaleEffect(hasTrash ? 1.12 : 1.0)
+//                                .scaleEffect(hasTrash ? 1.12 : 1.0)
+//                                .animation(
+//                                    .interpolatingSpring(stiffness: 220, damping: 12)
+//                                        .speed(1.1),
+//                                    value: hasTrash
+//                                )
+                                // New: live scale while a note is hovering over trash
+                                .scaleEffect(isOverTrash ? 1.25 : 1.0)
                                 .animation(
-                                    .interpolatingSpring(stiffness: 220, damping: 12)
-                                        .speed(1.1),
-                                    value: hasTrash
+                                    .interpolatingSpring(stiffness: 260, damping: 14),
+                                    value: isOverTrash
                                 )
                         }
                         .buttonStyle(.plain)
@@ -122,7 +130,7 @@ struct ContentView: View {
                                     )
                                 )
                         } else {
-                            StickyNoteView(note: note, screenSize: proxy.size)
+                            StickyNoteView(note: note, screenSize: proxy.size, isOverTrash: $isOverTrash)
                                 .position(CGPoint(x: note.x, y: note.y))
                                 .zIndex(isEditingNote ? 0.4 : note.zIndex)
                         }
@@ -210,3 +218,4 @@ struct NoteEditorView: View {
     ContentView()
         .modelContainer(for: Note.self, inMemory: true)
 }
+

@@ -36,6 +36,8 @@ struct StickyNoteView: View {
     var screenSize: CGSize
     
     @State private var isDeleting: Bool = false
+    // New: bind to ContentView’s live hover state
+    @Binding var isOverTrash: Bool
     
     var body: some View {
         ZStack {
@@ -79,10 +81,16 @@ struct StickyNoteView: View {
                     }
                     offset = gesture.translation
                     
-                    if startX + offset.width <= screenSize.width / 3.4 && startY + offset.height >= screenSize.height * 0.85 {
-                        isDeleting = true
-                    } else {
-                        isDeleting = false
+                    // Same region you used for deletion (bottom-left area where trash sits)
+                    let overTrashNow = startX + offset.width <= screenSize.width / 3.4
+                    && startY + offset.height >= screenSize.height * 0.85
+                    
+                    isDeleting = overTrashNow
+                    // Publish to ContentView to animate the trash can scale
+                    if isOverTrash != overTrashNow {
+                        withAnimation(.interpolatingSpring(stiffness: 260, damping: 14)) {
+                            isOverTrash = overTrashNow
+                        }
                     }
                     
                     withAnimation(.spring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.2)) {
@@ -116,6 +124,13 @@ struct StickyNoteView: View {
                         rotation = Angle(degrees: Double.random(in: -5...5))
                     }
                     
+                    // Clear hover state on end
+                    if isOverTrash {
+                        withAnimation(.interpolatingSpring(stiffness: 260, damping: 14)) {
+                            isOverTrash = false
+                        }
+                    }
+                    
                     // Persist
                     try? context.save()
                 }
@@ -132,3 +147,4 @@ struct StickyNoteView: View {
         }
     }
 }
+

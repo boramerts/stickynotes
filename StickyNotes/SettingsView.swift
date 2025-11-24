@@ -82,6 +82,9 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .scrollDisabled(true)
+        Text("StickyNotes by Bora Mert | 2025")
+            .font(.caption)
+            .padding(.top, 3)
     }
 }
 
