@@ -12,6 +12,10 @@ struct StickyNoteView: View {
     @AppStorage("NoteColor") private var noteColor: String = "yellow"
     @AppStorage("NoteSize") private var noteSize: String = "Normal"
     
+    @Environment(\.modelContext) private var context
+    @Bindable var note: Note
+    var screenSize: CGSize
+    
     @State private var offset = CGSize.zero
     @State private var scale: CGFloat = 1.0
     @State private var opacity: CGFloat = 1.0
@@ -24,16 +28,16 @@ struct StickyNoteView: View {
     }
     
     private var noteImage: String {
-        SettingsHandler.shared.getNoteColor(from: noteColor)
+        if note.color == nil {
+            SettingsHandler.shared.getNoteColor(from: noteColor)
+        } else {
+            SettingsHandler.shared.getNoteColor(from: note.color!)
+        }
     }
     
     private var bodySize: CGFloat {
         SettingsHandler.shared.getFontSize(from: noteSize)
     }
-    
-    @Environment(\.modelContext) private var context
-    @Bindable var note: Note
-    var screenSize: CGSize
     
     @State private var isDeleting: Bool = false
     // New: bind to ContentView’s live hover state

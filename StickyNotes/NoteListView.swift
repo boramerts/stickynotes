@@ -87,7 +87,7 @@ struct NoteListView: View {
                         Button("Delete", systemImage: "trash", role: .destructive) {
                             context.delete(note)
                         }
-                        Button("Recover", systemImage: "arrow.counterclockwise", role: .close) {
+                        Button("Recover", systemImage: "arrow.counterclockwise", role: .cancel) {
                             note.isTrash = false
                         }
                     }

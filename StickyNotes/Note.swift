@@ -21,6 +21,7 @@ final class Note {
     var isEditing: Bool
     var zIndex: Double
     var dateAdded: Date
+    var color: String?
     
     init(id: UUID = UUID(),
          x: Double = 0,
@@ -32,7 +33,8 @@ final class Note {
          height: Double = 120,
          isEditing: Bool = false,
          zIndex: Double = 0,
-         dateAdded: Date = Date.now
+         dateAdded: Date = Date.now,
+         color: String? = nil
     ) {
         self.id = id
         self.x = x
@@ -45,5 +47,6 @@ final class Note {
         self.isEditing = isEditing
         self.zIndex = zIndex
         self.dateAdded = dateAdded
+        self.color = color
     }
 }

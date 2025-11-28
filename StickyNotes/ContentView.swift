@@ -16,6 +16,8 @@ struct ContentView: View {
     @Environment(\.modelContext) private var context
     @Query private var notes: [Note]
     
+    @State private var notepadPressed: Bool = false
+    
     private var hasTrash: Bool {
         notes.contains(where:{$0.isTrash})
     }
@@ -57,13 +59,6 @@ struct ContentView: View {
                                 .scaledToFit()
                                 .frame(width: frameSide, height: frameSide)
                                 .padding([.leading, .bottom], 12)
-                                // Bounce by scaling up when hasTrash == true, back to 1.0 when false
-//                                .scaleEffect(hasTrash ? 1.12 : 1.0)
-//                                .animation(
-//                                    .interpolatingSpring(stiffness: 220, damping: 12)
-//                                        .speed(1.1),
-//                                    value: hasTrash
-//                                )
                                 // New: live scale while a note is hovering over trash
                                 .scaleEffect(isOverTrash ? 1.25 : 1.0)
                                 .animation(
@@ -77,7 +72,7 @@ struct ContentView: View {
                                 .presentationDragIndicator(.visible)
                                 .preferredColorScheme(appearance == "system" ? nil : (appearance == "dark" ? .dark : .light))
                         }
-
+                        
                         Spacer()
                         
                         Button {
@@ -119,9 +114,9 @@ struct ContentView: View {
                     
                     ForEach(visibleNotes) { note in
                         if note.isEditing {
-                            NoteEditorView(note: note, screenSize: proxy.size, noteImage: noteImage)
+                            NoteEditorView(note: note, screenSize: proxy.size)
                                 .position(CGPoint(x: proxy.size.width / 2,
-                                                  y: proxy.size.height * 0.55))
+                                                  y: proxy.size.height * 0.35))
                                 .zIndex(6) // higher than the tap layer
                                 .transition(
                                     .asymmetric(
@@ -167,50 +162,80 @@ struct NoteEditorView: View {
     @Environment(\.modelContext) private var context
     @Bindable var note: Note
     var screenSize: CGSize
-    var noteImage: String
-
+    let colors = ["yellow", "blue", "green", "pink", "orange"]
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                TextField("Title", text: $note.title)
-                    .font(.title2).bold()
+        HStack(alignment: .center, spacing: 16) {
+            // Editor card
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    TextField("Title", text: $note.title)
+                        .font(.title2).bold()
+                        .foregroundStyle(.black)
+                    Spacer()
+                    Button {
+                        withAnimation(.spring()) {
+                            note.isEditing = false
+                            note.width = 120
+                            note.height = 120
+                        }
+                        try? context.save()
+                    } label: {
+                        Image(systemName: "checkmark.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
+                    }
+                }
+                TextEditor(text: $note.body)
+                    .font(.body)
+                    .frame(height: 140)
+                    .scrollContentBackground(.hidden)
                     .foregroundStyle(.black)
                 Spacer()
-                Button {
-                    withAnimation(.spring()) {
-                        note.isEditing = false
-                        note.width = 120
-                        note.height = 120
-                    }
-                    try? context.save()
-                } label: {
-                    Image(systemName: "checkmark.circle.fill")
-                        .resizable()
-                        .scaledToFit()
+            }
+            .padding()
+            .padding(.horizontal)
+            .background(
+                Image(SettingsHandler.shared.getNoteColor(from: note.color ?? "yellow"))
+                    .resizable()
+                    .scaledToFill()
+            )
+            .frame(width: note.width, height: note.height)
+            .clipped()
+            .zIndex(Date().timeIntervalSince1970)
+            .onAppear {
+                // Ensure it’s visually on top while editing
+                note.zIndex = Date().timeIntervalSince1970
+            }
+            
+            // Vertical color selector on the right
+            VStack(spacing: 12) {
+                ForEach(colors, id: \.self) { color in
+                    let circleColor = Color(SettingsHandler.shared.getCircleColor(from: color))
+                    
+                    Circle()
+                        .fill(circleColor)
                         .frame(width: 30, height: 30)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.black, lineWidth: 2)
+                        )
+                        .background(
+                            Circle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(width: 38, height: 38)
+                                .opacity(note.color == color ? 1 : 0)
+                        )
+                        .onTapGesture {
+                            note.color = color
+                            try? context.save()
+                        }
                 }
             }
-            TextEditor(text: $note.body)
-                .font(.body)
-                .frame(height: 140)
-                .scrollContentBackground(.hidden)
-                .foregroundStyle(.black)
-            Spacer()
+            .padding(.vertical, 8)
         }
-        .padding()
-        .padding(.horizontal)
-        .background(
-            Image(noteImage)
-                .resizable()
-                .scaledToFill()
-        )
-        .frame(width: note.width, height: note.height)
-        .position(x: screenSize.width / 2, y: screenSize.height * 0.25) // absolute position in the ZStack space
-        .zIndex(Date().timeIntervalSince1970)
-        .onAppear {
-            // Ensure it’s visually on top while editing
-            note.zIndex = Date().timeIntervalSince1970
-        }
+        // Let the parent apply .position to this whole view.
     }
 }
 
@@ -218,4 +243,3 @@ struct NoteEditorView: View {
     ContentView()
         .modelContainer(for: Note.self, inMemory: true)
 }
-
