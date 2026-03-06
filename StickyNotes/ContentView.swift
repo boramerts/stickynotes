@@ -144,8 +144,8 @@ struct ContentView: View {
         let note = Note(
             x: screenSize.width / 2,
             y: screenSize.height * 0.25,
-            title: "Title",
-            body: "Your note goes here...",
+            title: "",
+            body: "",
             width: 280,
             height: 260,
             isEditing: true,
@@ -169,9 +169,16 @@ struct NoteEditorView: View {
             // Editor card
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    TextField("Title", text: $note.title)
-                        .font(.title2).bold()
-                        .foregroundStyle(.black)
+                    ZStack(alignment: .leading){
+                        TextField("",text: $note.title)
+                            .font(.title2).bold()
+                            .foregroundStyle(.black)
+                        if note.title.isEmpty {
+                            Text("Title")
+                                .font(.title2).bold()
+                                .foregroundStyle(.gray)
+                        }
+                    }
                     Spacer()
                     Button {
                         withAnimation(.spring()) {
@@ -192,6 +199,16 @@ struct NoteEditorView: View {
                     .frame(height: 140)
                     .scrollContentBackground(.hidden)
                     .foregroundStyle(.black)
+                    .overlay(alignment: .topLeading) {
+                        if note.body.isEmpty {
+                            Text("Write a note...")
+                                .font(.body) // match the editor’s font
+                                .foregroundStyle(.gray)
+                                .padding(.top, 8)      // approximate TextEditor’s top inset
+                                .padding(.leading, 5)  // approximate TextEditor’s leading inset
+                                .allowsHitTesting(false)
+                        }
+                    }
                 Spacer()
             }
             .padding()
