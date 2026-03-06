@@ -202,10 +202,10 @@ struct NoteEditorView: View {
                     .overlay(alignment: .topLeading) {
                         if note.body.isEmpty {
                             Text("Write a note...")
-                                .font(.body) // match the editor’s font
+                                .font(.body)
                                 .foregroundStyle(.gray)
-                                .padding(.top, 8)      // approximate TextEditor’s top inset
-                                .padding(.leading, 5)  // approximate TextEditor’s leading inset
+                                .padding(.top, 8)
+                                .padding(.leading, 5)
                                 .allowsHitTesting(false)
                         }
                     }
@@ -222,7 +222,6 @@ struct NoteEditorView: View {
             .clipped()
             .zIndex(Date().timeIntervalSince1970)
             .onAppear {
-                // Ensure it’s visually on top while editing
                 note.zIndex = Date().timeIntervalSince1970
             }
             
@@ -252,7 +251,6 @@ struct NoteEditorView: View {
             }
             .padding(.vertical, 8)
         }
-        // Let the parent apply .position to this whole view.
     }
 }
 
